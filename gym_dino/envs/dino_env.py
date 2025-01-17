@@ -30,7 +30,13 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("T-Rex Rush")
 
 def load_image(name, sizex=-1, sizey=-1, colorkey=None):
-    fullname = sprite_path(name)
+    # Hardcoded path for sprites
+    base_path = '/content/gym-dino/gym_dino/envs/sprites'
+    fullname = os.path.join(base_path, name)
+    print(f"Trying to load image: {fullname}")  # Debug the file path
+    if not os.path.exists(fullname):
+        raise FileNotFoundError(f"Sprite file not found: {fullname}")
+
     image = pygame.image.load(fullname)
     image = image.convert()
     if colorkey is not None:
@@ -41,14 +47,22 @@ def load_image(name, sizex=-1, sizey=-1, colorkey=None):
     if sizex != -1 or sizey != -1:
         image = pygame.transform.scale(image, (sizex, sizey))
 
-    return (image, image.get_rect())
+    return image, image.get_rect()
+
 
 def load_sprite_sheet(sheetname, nx, ny, scalex=-1, scaley=-1, colorkey=None):
-    fullname = sprite_path(sheetname)
+    # Hardcoded path for sprites
+    base_path = '/content/gym-dino/gym_dino/envs/sprites'
+    fullname = os.path.join(base_path, sheetname)
+    print(f"Trying to load sprite sheet: {fullname}")  # Debug the file path
+    if not os.path.exists(fullname):
+        raise FileNotFoundError(f"Sprite file not found: {fullname}")
+
     sheet = pygame.image.load(fullname)
     sheet = sheet.convert()
     sheet_rect = sheet.get_rect()
 
+    # Rest of the function...
     sprites = []
     sizex = sheet_rect.width / nx
     sizey = sheet_rect.height / ny
@@ -72,6 +86,7 @@ def load_sprite_sheet(sheetname, nx, ny, scalex=-1, scaley=-1, colorkey=None):
 
     sprite_rect = sprites[0].get_rect()
     return sprites, sprite_rect
+
 
 def extractDigits(number):
     """ Utility to extract individual scoreboard digits from an integer. """
