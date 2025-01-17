@@ -62,7 +62,6 @@ def load_sprite_sheet(sheetname, nx, ny, scalex=-1, scaley=-1, colorkey=None):
     sheet = sheet.convert()
     sheet_rect = sheet.get_rect()
 
-    # Rest of the function...
     sprites = []
     sizex = sheet_rect.width / nx
     sizey = sheet_rect.height / ny
@@ -101,6 +100,7 @@ def extractDigits(number):
         digits.reverse()
         return digits
     return [0, 0, 0, 0, 0]
+
 
 class Dino:
     def __init__(self, sizex=-1, sizey=-1):
@@ -168,7 +168,10 @@ class Dino:
 
         self.counter += 1
 
+
 class Cactus(pygame.sprite.Sprite):
+    containers = None  # Initialize containers attribute
+
     def __init__(self, speed=5, sizex=-1, sizey=-1):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.images, self.rect = load_sprite_sheet('cacti-small.png', 3, 1, sizex, sizey, -1)
@@ -185,7 +188,10 @@ class Cactus(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
+
 class Ptera(pygame.sprite.Sprite):
+    containers = None  # Initialize containers attribute
+
     def __init__(self, speed=5, sizex=-1, sizey=-1):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.images, self.rect = load_sprite_sheet('ptera.png', 2, 1, sizex, sizey, -1)
@@ -209,6 +215,7 @@ class Ptera(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
+
 class Ground:
     def __init__(self, speed=-5):
         self.image, self.rect = load_image('ground.png', -1, -1, -1)
@@ -230,7 +237,10 @@ class Ground:
         if self.rect1.right < 0:
             self.rect1.left = self.rect.right
 
+
 class Cloud(pygame.sprite.Sprite):
+    containers = None  # Initialize containers attribute
+
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image, self.rect = load_image('cloud.png', int(90*30/42), 30, -1)
@@ -246,6 +256,7 @@ class Cloud(pygame.sprite.Sprite):
         self.rect = self.rect.move(self.movement)
         if self.rect.right < 0:
             self.kill()
+
 
 class Scoreboard:
     def __init__(self, x=-1, y=-1):
@@ -272,6 +283,7 @@ class Scoreboard:
         for s in score_digits:
             self.image.blit(self.tempimages[s], (x_offset, 0))
             x_offset += self.temprect.width
+
 
 class DinoEnv(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -411,7 +423,16 @@ class DinoEnv(gym.Env):
         info = {}
         return self.obs, reward, self.done, info
 
-    def reset(self):
+    def reset(self, seed=None, return_info=False, options=None):
+        # Initialize pygame display if not already initialized
+        if not pygame.display.get_init():
+            pygame.display.init()
+
+        # Set up a display surface if not already created
+        if not pygame.display.get_surface():
+            pygame.display.set_mode((600, 150))  # Use the appropriate size
+
+        # Reset the environment state
         self.gamespeed = 4
         self.gameOver = False
         self.playerDino = Dino(44, 47)
@@ -420,29 +441,14 @@ class DinoEnv(gym.Env):
         self.counter = 0
         self.done = False
 
-        # Clear sprite groups
-        self.cacti = pygame.sprite.Group()
-        self.pteras = pygame.sprite.Group()
-        self.clouds = pygame.sprite.Group()
-        self.last_obstacle = pygame.sprite.Group()
-
-        Cactus.containers = self.cacti
-        Ptera.containers = self.pteras
-        Cloud.containers = self.clouds
-
-        self.temp_images, self.temp_rect = load_sprite_sheet(
-            'numbers.png', 12, 1, 11, int(11*6/5), -1
-        )
-
-        # Fill the screen once, so we can capture an observation
+        # Fill the display surface
         screen.fill(background_col)
         pygame.display.flip()
 
-        # Return initial observation
-        screen_array = pygame.surfarray.array3d(pygame.display.get_surface())
-        screen_array = np.transpose(screen_array, (1, 0, 2))
-        self.obs = screen_array
-        return self.obs
+        # Return the initial observation
+        observation = pygame.surfarray.array3d(pygame.display.get_surface())
+        observation = np.transpose(observation, (1, 0, 2))  # Ensure consistency with step
+        return observation
 
     def render(self, mode='human'):
         # If you want a human-visible mode, just flip the display
