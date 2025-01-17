@@ -292,6 +292,7 @@ class DinoEnv(gym.Env):
 	metadata = {'render.modes': ['human']}
 
 	def __init__(self):
+		super(DinoEnv, self).__init__()  
 		self.gamespeed = 4
 		self.gameOver = False
 		self.playerDino = Dino(44,47)
