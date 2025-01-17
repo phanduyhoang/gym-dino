@@ -299,16 +299,10 @@ class DinoEnv(gym.Env):
 		self.scb = Scoreboard()
 		self.counter = 0
 		self.done = False
-
-	        self.action_space = spaces.Discrete(3)
-	
+                self.action_space = spaces.Discrete(3)
 	        # Define observation space: Example shape of (150, 600, 3) for RGB
-	        self.observation_space = spaces.Box(
-	            low=0, high=255, shape=(150, 600, 3), dtype=np.uint8
-	        )
-	
-	        self.FPS = 60
-
+		self.observation_space = spaces.Box(low=0, high=255, shape=(150, 600, 1), dtype=np.uint8)
+		self.FPS = 60
 		self.cacti = pygame.sprite.Group()
 		self.pteras = pygame.sprite.Group()
 		self.clouds = pygame.sprite.Group()
